@@ -37,8 +37,6 @@ while(1):
   except:
 	pass
 
-  
-  
   if cv2.waitKey(10)==ord('q'):
         break
 cam.release()
