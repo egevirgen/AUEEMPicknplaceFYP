@@ -49,7 +49,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
    TIM4->CCR1=0;
 
    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
@@ -64,30 +64,37 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-	  TIM4->CCR1=1500;
-	   HAL_Delay(1000);
-	   TIM4->CCR1=1050;
-	    HAL_Delay(1000);
 
-		  TIM4->CCR2=2400;
+	  if(HAL_GPIO_ReadPin(buton1_GPIO_Port,buton1_Pin)==1){
+
+		  TIM4->CCR2=1500;
 		   HAL_Delay(1000);
-		   TIM4->CCR2=1500;
+		   TIM4->CCR2=1950;
 		    HAL_Delay(1000);
 
+		    TIM4->CCR1=1500;
+		  	   HAL_Delay(1000);
+		  	   TIM4->CCR1=1050;
+		  	    HAL_Delay(1000);
+
+		  TIM4->CCR2=1050;
+		  	  HAL_Delay(1000);
 
 
+		 TIM4->CCR3=2600;
+		   HAL_Delay(3000);
+		   TIM4->CCR1=1500;
 
-		  TIM4->CCR3=2400;
-		   HAL_Delay(1000);
 		   TIM4->CCR3=1500;
-		    HAL_Delay(1000);
+		  		   HAL_Delay(1000);
 
+
+	  }
 
 
 
   }
   /* USER CODE END 3 */
-
 }
 
 /** System Clock Configuration
