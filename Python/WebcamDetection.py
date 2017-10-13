@@ -102,7 +102,7 @@ while(1):
         # Capture webcam frame
   	ret, frame = cap.read()
 	center_temp,center_temp_x,center_temp_y = find_contours(image_process(frame))
-	ser.write(uart.encode('utf-8'))
+	#ser.write(uart.encode('utf-8'))
 	center_memory=center_temp
 	# Show the output image
   	cv2.imshow("Frame", frame)
