@@ -8,7 +8,9 @@ import imutils
 import operator
 import serial
 import time
- 
+from termcolor import colored
+
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--picamera", type=int, default=-1,
@@ -76,9 +78,9 @@ def find_contours(frame_thresh):
 			cY = int(M["m01"] / M["m00"])
 
 			# Draw the contour and center of the shape on the image
-			cv2.drawContours(frame, [c], -1, (255, 255, 0), 1)
+			cv2.drawContours(frame, [c], -1, (25, 255, 0), 1)
 			cv2.circle(frame, (cX, cY), 2, (255, 255, 0), -1)
-			cv2.putText(frame, "center", (cX - 20, cY - 20),
+			cv2.putText(frame, "", (cX - 20, cY - 20),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
 
 			# Sekil okunabilir halde ise center noktasini al
@@ -93,31 +95,59 @@ def uart(center_temp_x,center_temp_y,yuzolcumleri_temp) :
 		global kamera_aktif
 		global goruntu_isleme_aktif
 	
+		ser.write("u__aktif")
+		
+		size_array=str(len(center_temp_x))
+		if len(str(len(center_temp_x))) <  4 :
+					size_temp=""
+					for temp5 in range(4-len(str(len(center_temp_x)))) :
+							size_temp+="0"
+						
+					size_array="size"+size_temp+size_array
+		ser.write(size_array)
+		
 		for temp in range(len(center_temp_x)) :
 			x=center_temp_x[temp]
 			y=center_temp_y[temp]
-			#z=yuzolcumleri_temp[temp]
-			if x<100 and x>9 :
-				x='0'+str(x)
-			elif x<10 :
-				x='00'+str(x)
-			if y<100 and y>9 :
-				y='0'+str(y)
-			elif y<10 :
-				y='00'+str(y)
+			z=int(yuzolcumleri_temp[temp])
+			if len(str(x)) < 3 :
+				x_temp=""
+				for temp2 in range(3-len(str(x))) :
+					x_temp+="0"
+				
+				x = str(x_temp) + str(x)
+			
+			if len(str(y)) < 3 :
+				y_temp=""
+				for temp3 in range(3-len(str(y))) :
+					y_temp+="0"
+						
+				y = str(y_temp) + str(y)
+				
+			if len(str(z)) < 6 :
+				z_temp=""
+				for temp4 in range(6-len(str(z))) :
+					z_temp= str(z_temp)+"0"
+			
+				z = str(z_temp) + str(z)
+
 			x=str(x)
 			y=str(y)
-			sonuc= x + 'a'
-			sonuc+=y
-			sonuc+='k'
-			#return sonuc+'-'+str(z)
-			ser.write(sonuc)
+			z=str(z)
 			
-		print("Koordinatlar STM'e gonderildi.")	
-		
+			sonuc= x + 'a' +y +'k'
+			
+			sonuc2 = 'y' + z +'z'
+			ser.write(sonuc)
+			ser.write(sonuc2)
+			
 		if kamera_aktif == "false":
 			kamera_aktif = "true"
-			goruntu_isleme_aktif = "false"		
+			goruntu_isleme_aktif = "false"
+				
+		ser.write("u__pasif")	
+		
+	
 		
 def clickListener() :
 	global kamera_aktif
@@ -131,23 +161,26 @@ def clickListener() :
 	elif key==ord('a'):
 		if kamera_aktif == "true":
 			ser.write("konum__x")
+			print colored("-> Goruntu isleme talebinde bulunuldu.",'yellow')	
 			
 		elif kamera_aktif == "false":
 			kamera_aktif = "true"
 			goruntu_isleme_aktif = "false"
-			print("Goruntu isleme modu devre disi birakildi.")	
+			print colored("-> Goruntu isleme modu devre disi birakildi.",'yellow')	
 			
 	elif key==ord('s'):
 		ser.write("camplace")
-		print("Platform fotograf cekme konumuna gonderiliyor...")
+		print colored("-> Fotograf cekme konumuna gitme talebinde bulunuldu.",'yellow')
 		
 	elif key==ord('r'):
 		ser.write("resetstm")
-		print("STM yeniden baslatildi.")	
+		print colored("-> STM yeniden baslatma talebinde bulunuldu.",'yellow')	
 		
 	elif key==ord('f'):
 		if goruntu_isleme_aktif == "true" :
-			uart(center_temp_x,center_temp_y,yuzolcumleri)			
+			print colored("-> Merkez ve Yuzolcumu degerleri STM'e gonderiliyor.",'yellow')	
+			uart(center_temp_x,center_temp_y,yuzolcumleri)	
+			
 		
 
 def kamera_acik() :
@@ -179,10 +212,14 @@ def veri_alma() :
 		uart_read=ser.readline()
 		
 		if uart_read!="" :
-			
+			if uart_read.find("STM Cevabi:")!= -1 :
+				print colored(uart_read,'green')
+				
 			if uart_read == "konum_x_yerinde_fotograf" :
 				kamera_aktif = "false"
-				print("Goruntu isleme modu aktif edildi.")
+				print colored("STM Cevabi: Goruntu isleme modu aktif edildi.",'green')
+				
+				
 				
 		
 				
