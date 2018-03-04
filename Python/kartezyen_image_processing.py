@@ -9,7 +9,47 @@ import operator
 import serial
 import time
 from termcolor import colored
+import threading
+import os
 
+class Raspberry_Core_Temp_Check(object):
+   
+    def __init__(self, interval=1):
+      
+        self.interval = interval
+
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+
+    def run(self):
+		while True:
+			global sicaklik_delay
+			
+			time.sleep(sicaklik_delay)
+			temperature = os.popen("vcgencmd measure_temp").readline()
+			temperature = temperature.replace("temp=","")
+			temperature = temperature.replace("'C","")
+			temperature = temperature.replace("\n","") # firebase'e yazacak
+			
+			#if float(temp) > 75 :
+			print temperature #Sicaklik Log'una kaydedilecek Tarih Saat de firebaseden cekmek lazim
+				
+        
+class Firebase_Send_Sensor_Data(object):
+   
+    def __init__(self, interval=1):
+      
+        self.interval = interval
+
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+
+    def run(self):
+   
+        print('Doing something imporant in the background 2')
+        time.sleep(1)
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -34,9 +74,14 @@ global center_temp_x
 global center_temp_y
 global yuzolcumleri
 
+global sicaklik_delay
 
 kamera_aktif = "true"
 goruntu_isleme_aktif = "false"
+
+sicaklik_delay = 5
+
+Raspberry_Core_Temp_Check()
 
 # Image process def
 def image_process(frame):
@@ -180,9 +225,12 @@ def clickListener() :
 		if goruntu_isleme_aktif == "true" :
 			print colored("-> Merkez ve Yuzolcumu degerleri STM'e gonderiliyor.",'yellow')	
 			uart(center_temp_x,center_temp_y,yuzolcumleri)	
-			
+	
+	elif key==ord('m'):
+		Firebase_Send_Sensor_Data()	
 		
-
+		
+		
 def kamera_acik() :
 	global frame
 	
@@ -234,4 +282,8 @@ while True:
   	
 	if clickListener() == "break" :
 		break  
+		
+		
+
+	
 
